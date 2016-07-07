@@ -34,16 +34,24 @@ class WebScraper
 		alllinks.each do |link|
 			# do nothing if the link is external or if the link has already been processed, or the link cannot be processed due to being an incorrect file type
 			if @websites_processed_urls.include?(link) || !link.start_with?('http://' + host) ||  link.split("/").last.include?('.')
+				# binding.pry
 			# otherwise, create a new link object, submit it into websites_pages, and recursively scrape that new page
 			else
-				clean_url = URI.parse(link) 
-				doc = Nokogiri::HTML(open(clean_url))
-				@websites_pages << Link.new(link,doc,@host)
-				@websites_processed_urls << link
-				puts "#{link} has been added"
-				recursivecrawl(doc) 
+				begin
+					clean_url = URI.parse(link)
+					doc = Nokogiri::HTML(open(clean_url))
+					@websites_pages << Link.new(link,doc,@host)
+					@websites_processed_urls << link
+					puts "#{link} has been added"
+					recursivecrawl(doc) 
+				rescue OpenURI::HTTPError
+					puts "Link caused an error #{link}"
+				end
+		
 			end
 		end
+	rescue Exception => e
+		binding.pry
 	end
 
 
